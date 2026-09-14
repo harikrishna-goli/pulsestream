@@ -1,16 +1,22 @@
 # PulseStream ⚡
 ### High-Throughput Distributed Event Ingestion & Webhook Dispatcher Engine
 
-PulseStream is a production-grade backend service built in **Python & FastAPI** showcasing modern API design, asynchronous execution, distributed idempotency, rate limiting, and observability.
+PulseStream is a production-grade backend service built in **Python & FastAPI** for high-throughput event ingestion, atomic rate limiting, secure webhook dispatch, and real-time observability.
 
 ---
 
-## 📋 Comprehensive Engineering Planning Hub
-For the full end-to-end Product Requirement Document (PRD), system design blueprints, 4-week implementation sprints, and resume articulation guide, see the [**`plan/` Hub**](./plan/README.md).
-- 📑 [**`01_requirements_and_prd.md`**](./plan/01_requirements_and_prd.md): Functional/Non-Functional requirements, user stories, and SLO targets.
-- 🏛️ [**`02_system_design_architecture.md`**](./plan/02_system_design_architecture.md): Redis Lua token-bucket algorithm, Transactional Outbox pattern, and state machines.
-- 🚀 [**`03_sprint_milestones_and_tasks.md`**](./plan/03_sprint_milestones_and_tasks.md): 4-week step-by-step developer implementation tasks.
-- 🏆 [**`04_quality_testing_and_expectations.md`**](./plan/04_quality_testing_and_expectations.md): Definition of Done, load test benchmarks, and interview STAR answers.
+## 🛠 Tech Stack
+| Layer | Technology |
+| :--- | :--- |
+| **Runtime & Framework** | Python 3.12, FastAPI, Uvicorn |
+| **Rate Limiting** | Redis Lua Scripts (Atomic Token Bucket via `EVALSHA`) |
+| **Database** | PostgreSQL (Async via SQLAlchemy 2.0 + `asyncpg`) |
+| **Migrations** | Alembic |
+| **Auth** | API Key Authentication (SHA-256 hashed storage) |
+| **Webhook Security** | HMAC-SHA256 Payload Signing |
+| **Infrastructure** | Docker, Docker Compose |
+| **Testing** | PyTest (fixtures, mocking, parametrization) |
+| **CI/CD** | GitHub Actions |
 
 ---
 
