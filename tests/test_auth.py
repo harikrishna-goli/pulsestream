@@ -1,22 +1,6 @@
 import pytest
-import asyncio
-from httpx import AsyncClient,ASGITransport
+from httpx import AsyncClient, ASGITransport
 from app.main import app
-from app.database import Base, engine
-
-
-@pytest.fixture(scope="session", autouse=True)
-def init_db():
-    async def _init():
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        await engine.dispose()
-    asyncio.run(_init())
-
-@pytest.fixture(autouse=True)
-async def cleanup_db():
-    yield
-    await engine.dispose()
 
 @pytest.mark.asyncio
 async def test_create_api_key():

@@ -1,15 +1,6 @@
-import asyncio
 import pytest
 from httpx import AsyncClient, ASGITransport
 from app.main import app
-from app.database import engine, Base
-
-@pytest.fixture(scope="session", autouse=True)
-def init_db():
-    async def _init():
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-    asyncio.run(_init())
 
 @pytest.mark.asyncio
 async def test_health_and_ready():
