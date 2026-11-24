@@ -16,7 +16,7 @@ dependencies = [
     "pytest>=8.1.0",
     "pytest-asyncio>=0.23.5",
     "redis>=5.0.3",
-    "sqlalchemy>=2.0.28",
+    "sqlalchemy[asyncio]>=2.0.28",
     "structlog>=24.1.0",
     "uvicorn[standard]>=0.28.0",
 ]
