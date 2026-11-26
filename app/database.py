@@ -4,9 +4,10 @@ from .config import settings
 
 engine = create_async_engine(
     settings.DATABASE_URL,
-    pool_size=20,
+    pool_size=10,
     max_overflow=10,
-    pool_recycle=3600,
+    pool_pre_ping=True,   # Verify connection is alive before use (handles Neon idle disconnects)
+    pool_recycle=300,     # Recycle connections every 5 min (matches Neon auto-pause)
     echo=False,
     future=True
 )
