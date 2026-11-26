@@ -149,7 +149,9 @@ async def test_health_readyz_and_metrics():
         assert metrics.status_code == 200
         assert "pulsestream_events_ingested_total" in metrics.text
 
-        with patch("app.api.v1.health.engine.connect", side_effect=RuntimeError("db down")):
+        broken_engine = MagicMock()
+        broken_engine.connect.side_effect = RuntimeError("db down")
+        with patch("app.api.v1.health.engine", broken_engine):
             unready = await ac.get("/readyz")
             assert unready.status_code == 503
             assert unready.json()["status"] == "not_ready"
