@@ -53,4 +53,4 @@ jobs:
           DATABASE_URL: "postgresql+asyncpg://user:password@localhost:5432/pulsestream"
           REDIS_URL: "redis://localhost:6379/0"
         run: |
-          pytest --verbose
+          pytest --verbose --cov=app --cov-report=term-missing
