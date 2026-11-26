@@ -11,6 +11,7 @@ from app.models.event import EventModel, IdempotencyRecordModel, WebhookEndpoint
 from app.schemas.event import EventCreate, EventResponse
 from app.services.webhook_dispatcher import dispatch_webhook
 from app.services.redis import get_redis_client
+from app.api.v1.health import EVENTS_INGESTED_TOTAL
 
 router = APIRouter(prefix="/events", tags=["Events"])
 
@@ -104,12 +105,15 @@ async def ingest_event(
             dispatch_webhook,
             target_url=wh.target_url,
             secret=wh.secret,
-            payload={"event_id": event_id, "type": event_in.event_type, "data": event_in.payload}
+            payload={"event_id": event_id, "type": event_in.event_type, "data": event_in.payload},
+            event_id=event_id,
+            tenant_id=tenant_id,
         )
 
     # 4. Commit event
     await db.commit()
     await db.refresh(event_db)
+    EVENTS_INGESTED_TOTAL.inc()
     
     # 5. Save idempotency record (Redis 24hr TTL + DB with expires_at)
     if effective_idem_key:

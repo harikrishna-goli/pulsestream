@@ -18,4 +18,4 @@ services:
         value: "true"
       - key: REDIS_TIMEOUT_SECONDS
         value: "0.5"
-    healthCheckPath: /health
+    healthCheckPath: /healthz

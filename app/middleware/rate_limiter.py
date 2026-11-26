@@ -1,6 +1,7 @@
 import time
 from collections import defaultdict
 from fastapi import Request, HTTPException, status
+from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from app.config import settings
 from app.services.redis import get_redis_client
@@ -151,15 +152,14 @@ class RedisTokenBucketRateLimiter(BaseHTTPMiddleware):
         )
 
         if not allowed:
-            raise HTTPException(
-                status_code=status.HTTP_429_TOO_MANY_REQUEST,
-                content="Too many requests",
+            return JSONResponse(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                content={"detail": f"Rate limit exceeded. Try again in {retry_after} seconds."},
                 headers={
                     "Retry-After": str(retry_after),
                     "X-RateLimit-Limit": str(self.rate_limit),
-                    "X-RateLimit-Remaining": 0,
-                         },
-                detail=f"Rate limit exceeded. Try again in {retry_after} seconds."
+                    "X-RateLimit-Remaining": "0",
+                },
             )
 
         response = await call_next(request)
