@@ -1,7 +1,8 @@
 """
+FR-1.1.4: API token Creation
 Key Generation:
 - Uses secrets.token_urlsafe(32) for cryptographically secure pseudo-random number generation (CSPRNG).
-- Attaches prefix ps_live_ to distinguish from test keys.
+- Attaches prefix ps_alive_ to distinguish active keys.
 - Computes one-way hashlib.sha256(raw_key.encode()).hexdigest().
 - Computes safe preview prefix raw_key[:12] + "...".
 
@@ -13,7 +14,7 @@ import secrets
 import hashlib
 
 def generate_key() -> dict:
-    raw_key = secrets.token_urlsafe(32)
+    raw_key = f"ps_alive_{secrets.token_urlsafe(32)}"
     key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
     safe_preview = raw_key[:12] + "..."
     return {"raw_key": raw_key, "key_hash": key_hash, "safe_preview": safe_preview}

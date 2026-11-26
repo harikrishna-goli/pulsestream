@@ -1,3 +1,8 @@
+"""
+FR-3: Webhook Endpoint Management (`POST /api/v1/webhooks`):
+  - Allow tenants to register target URLs and optional signing secrets.
+"""
+
 import uuid
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -14,7 +19,17 @@ router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
 @router.post("", response_model=WebhookResponse, status_code=status.HTTP_201_CREATED)
 async def register_webhook(wh_in: WebhookCreate, db: AsyncSession = Depends(get_db), 
                            tenant_id: str = Depends(verify_api_key)):
-    
+    existing_stmt = select(WebhookEndpointModel).where(
+        WebhookEndpointModel.tenant_id == tenant_id,
+        WebhookEndpointModel.target_url == wh_in.target_url,
+    )
+    existing_res = await db.execute(existing_stmt)
+    if existing_res.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Webhook URL already registered for this tenant.",
+        )
+
     wh_id = f"wh_{uuid.uuid4().hex[:12]}"
     wh_db = WebhookEndpointModel(
         id=wh_id,

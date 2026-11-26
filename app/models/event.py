@@ -32,6 +32,7 @@ class IdempotencyRecordModel(Base):
     response_code = Column(Integer, nullable=False)
     response_body = Column(Text, nullable=False)
     created_at = Column(DateTime, default=utc_now, nullable=False)
+    expires_at = Column(DateTime, nullable=False)  # 24hr window enforcement
 
 class OutboxEventModel(Base):
     __tablename__ = "outbox_events"
