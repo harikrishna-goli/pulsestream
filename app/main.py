@@ -32,6 +32,7 @@ FR-6: Observability & Health Probing:
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from sqlalchemy import inspect, text
 from .config import settings
 from .database import engine, Base
 from .middleware.rate_limiter import RedisTokenBucketRateLimiter
@@ -41,10 +42,30 @@ from .api.v1.health import router as health_router
 from .api.v1.api_keys import router as security_router
 from .api.v1.users import router as users_router
 
+def _ensure_idempotency_expires_at(sync_conn):
+    """Ensure idempotency_records.expires_at exists on already-created tables (e.g. Render Free)."""
+    inspector = inspect(sync_conn)
+    if not inspector.has_table("idempotency_records"):
+        return
+    cols = {col["name"] for col in inspector.get_columns("idempotency_records")}
+    if "expires_at" not in cols:
+        sync_conn.execute(text("ALTER TABLE idempotency_records ADD COLUMN expires_at TIMESTAMP"))
+        if sync_conn.dialect.name == "postgresql":
+            sync_conn.execute(
+                text("UPDATE idempotency_records SET expires_at = created_at + INTERVAL '24 hours' WHERE expires_at IS NULL")
+            )
+            sync_conn.execute(text("ALTER TABLE idempotency_records ALTER COLUMN expires_at SET NOT NULL"))
+        else:
+            sync_conn.execute(
+                text("UPDATE idempotency_records SET expires_at = datetime(created_at, '+24 hours') WHERE expires_at IS NULL")
+            )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(_ensure_idempotency_expires_at)
     yield
 
 def create_app() -> FastAPI:

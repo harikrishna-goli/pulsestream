@@ -46,22 +46,20 @@ async def register_user(user: UserRegisterRequest, db: AsyncSession = Depends(ge
 
 @router.get("/me", status_code=status.HTTP_200_OK)
 async def get_current_user(tenant_id: str = Depends(verify_api_key)):
-    """Return the authenticated tenant_id for the provided X-API-Token / X-API-Key."""
+    """Return the authenticated tenant_id for the provided X-API-Key."""
     return {"tenant_id": tenant_id}
 
 
 @router.delete("/delete", status_code=status.HTTP_202_ACCEPTED)
 async def delete_user(
-    x_api_token: str | None = Header(default=None, alias="X-API-Token"),
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
     db: AsyncSession = Depends(get_db),
 ):
     """Revoke/deactivate the current user's API token."""
-    token = x_api_token or x_api_key
-    if not token:
+    if not x_api_key:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="API Key missing")
 
-    hashed = hash_key(token)
+    hashed = hash_key(x_api_key)
     res = await db.execute(select(APIKeyModel).where(APIKeyModel.key_hash == hashed))
     record = res.scalar_one_or_none()
     if not record:

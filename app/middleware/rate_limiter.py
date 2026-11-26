@@ -135,7 +135,7 @@ class RedisTokenBucketRateLimiter(BaseHTTPMiddleware):
 
         client_ip = request.client.host if request.client else "unknown"
 
-        api_key = request.headers.get("X-API-Key") or request.headers.get("X-API-Token")
+        api_key = request.headers.get("X-API-Key")
         if api_key:
             hashed_key = hash_key(api_key)[:16]  # Use a truncated hash for privacy and uniqueness
             client_ip = f"tenant:{hashed_key}"

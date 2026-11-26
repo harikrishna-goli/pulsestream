@@ -7,22 +7,19 @@ from fastapi import Depends, HTTPException, Security, status
 from fastapi.security import APIKeyHeader
 
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
-api_token_header = APIKeyHeader(name="X-API-Token", auto_error=False)
 
 async def verify_api_key(
     api_key: str = Security(api_key_header),
-    api_token: str = Security(api_token_header),
     db: AsyncSession = Depends(get_db),
 ) -> str:
     """
     FR-1.1.5: API token Validation
-    Verify the provided API key (X-API-Key or X-API-Token) against the stored hashed keys in the database.
+    Verify the provided API key (X-API-Key) against the stored hashed keys in the database.
     """
-    token = api_key or api_token
-    if not token:
+    if not api_key:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="API Key missing")
     
-    hashed_key = hash_key(token)
+    hashed_key = hash_key(api_key)
     result = await db.execute(
         select(APIKeyModel).where(APIKeyModel.key_hash == hashed_key, 
                                   APIKeyModel.is_active == True)

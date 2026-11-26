@@ -72,13 +72,10 @@ async def ingest_event(
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(verify_api_key),
     idempotency_key: str | None = Header(None, alias="Idempotency-Key"),
-    x_idempotency_key: str | None = Header(None, alias="X-Idempotency-Key"),
 ):
-    effective_idem_key = idempotency_key or x_idempotency_key
-
     # 1. Idempotency Check (Redis → DB, 24hr window)
-    if effective_idem_key:
-        cached_response = await _get_idempotency_response(effective_idem_key, db)
+    if idempotency_key:
+        cached_response = await _get_idempotency_response(idempotency_key, db)
         if cached_response:
             return cached_response
 
@@ -116,9 +113,9 @@ async def ingest_event(
     EVENTS_INGESTED_TOTAL.inc()
     
     # 5. Save idempotency record (Redis 24hr TTL + DB with expires_at)
-    if effective_idem_key:
+    if idempotency_key:
         response_data = EventResponse.model_validate(event_db).model_dump()
-        await _save_idempotency(effective_idem_key, response_data, db)
+        await _save_idempotency(idempotency_key, response_data, db)
 
     return event_db
 
