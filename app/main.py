@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from .config import settings
 from .database import engine, Base
-from .middleware.rate_limiter import InMemoryTokenBucketRateLimiter
+from .middleware.rate_limiter import RedisTokenBucketRateLimiter
 from .api.v1.events import router as events_router
 from .api.v1.webhooks import router as webhooks_router
 from .api.v1.health import router as health_router
@@ -25,7 +25,7 @@ def create_app() -> FastAPI:
     )
 
     # Middleware
-    app.add_middleware(InMemoryTokenBucketRateLimiter, rate_limit=settings.RATE_LIMIT_PER_MINUTE)
+    app.add_middleware(RedisTokenBucketRateLimiter, rate_limit=settings.RATE_LIMIT_PER_MINUTE)
 
     # Routers
     app.include_router(events_router, prefix=settings.API_V1_PREFIX)
